@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ChordCraft Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0fdf4', 500: '#22c55e', 600: '#16a34a', 700: '#15803d', 900: '#14532d' },
+            slate: { 850: '#1e293b', 900: '#0f172a', 950: '#020617' }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; touch-action: manipulation; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+    
+    .char-node { position: relative; display: inline-block; cursor: pointer; transition: background 0.15s; border-radius: 2px; padding: 0 0.5px; }
+    .char-node:hover { background-color: rgba(34, 197, 94, 0.25); }
+    .char-node.selected-char { background-color: rgba(34, 197, 94, 0.4); ring: 2px solid #22c55e; }
+    .char-node.has-chord { margin-top: 1.4rem; }
+    
+    .anchored-chord {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-weight: 800;
+      font-size: 0.85rem;
+      line-height: 1;
+      padding: 2px 5px;
+      border-radius: 4px;
+      white-space: nowrap;
+      pointer-events: auto;
+      user-select: none;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .word-token { display: inline-flex; flex-wrap: nowrap; margin-right: 0.45rem; margin-bottom: 0.5rem; position: relative; }
+    .line-row { display: flex; flex-wrap: wrap; align-items: flex-end; min-height: 2.2rem; margin-bottom: 0.75rem; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-screen flex flex-col overflow-hidden select-none">
+
+  <!-- Top Navigation -->
+  <header class="bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex items-center justify-between shrink-0 z-30">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white font-black text-lg">
+        <i class="fa-solid fa-music"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-sm tracking-wide text-white leading-tight">ChordCraft</h1>
+        <p class="text-[10px] text-slate-400 font-medium">Anchor Studio</p>
+      </div>
+    </div>
+
+    <!-- Mode Switcher -->
+    <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
+      <button id="btn-mode-setup" onclick="setMode('setup')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5">
+        <i class="fa-solid fa-pen-to-square text-xs"></i> <span>Setup</span>
+      </button>
+      <button id="btn-mode-edit" onclick="setMode('edit')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5">
+        <i class="fa-solid fa-guitar text-xs"></i> <span>Edit</span>
+      </button>
+      <button id="btn-mode-perform" onclick="setMode('perform')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5">
+        <i class="fa-solid fa-play text-xs"></i> <span>Perform</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- EDIT MODE: FIXED CHORD TOOLBAR TOP -->
+  <div id="edit-chord-bar" class="bg-slate-900/95 backdrop-blur border-b border-slate-800 p-2.5 flex flex-col gap-2 shrink-0 z-20 shadow-xl transition-all">
+    <div class="flex items-center justify-between">
+      <div class="text-[11px] font-bold uppercase tracking-wider text-brand-500 flex items-center gap-1.5">
+        <i class="fa-solid fa-crosshairs"></i>
+        <span id="target-indicator">Tap any letter below to anchor chord</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button onclick="clearSelectedChar()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded border border-slate-700">Clear Selection</button>
+      </div>
+    </div>
+
+    <!-- Root Note Selector -->
+    <div class="flex items-center gap-1 overflow-x-auto custom-scrollbar pb-1">
+      <span class="text-[10px] font-bold text-slate-400 w-10 shrink-0 uppercase">Root:</span>
+      <div class="flex items-center gap-1">
+        <button onclick="selectRoot('C')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">C</button>
+        <button onclick="selectRoot('D')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">D</button>
+        <button onclick="selectRoot('E')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">E</button>
+        <button onclick="selectRoot('F')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">F</button>
+        <button onclick="selectRoot('G')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">G</button>
+        <button onclick="selectRoot('A')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">A</button>
+        <button onclick="selectRoot('B')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">B</button>
+      </div>
+      <div class="h-5 w-[1px] bg-slate-700 mx-1 shrink-0"></div>
+      <div class="flex items-center gap-1 shrink-0">
+        <button onclick="toggleAccidental('#')" id="btn-sharp" class="px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs">♯</button>
+        <button onclick="toggleAccidental('b')" id="btn-flat" class="px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs">♭</button>
+      </div>
+    </div>
+
+    <!-- Chord Quality Selector -->
+    <div class="flex items-center gap-1 overflow-x-auto custom-scrollbar pb-1">
+      <span class="text-[10px] font-bold text-slate-400 w-10 shrink-0 uppercase">Type:</span>
+      <div class="flex items-center gap-1">
+        <button onclick="selectQuality('')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">Maj</button>
+        <button onclick="selectQuality('m')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">m</button>
+        <button onclick="selectQuality('7')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">7</button>
+        <button onclick="selectQuality('maj7')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">maj7</button>
+        <button onclick="selectQuality('m7')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">m7</button>
+        <button onclick="selectQuality('sus4')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">sus4</button>
+        <button onclick="selectQuality('dim')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">dim</button>
+        <button onclick="selectQuality('add9')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">add9</button>
+      </div>
+      <div class="h-5 w-[1px] bg-slate-700 mx-1 shrink-0"></div>
+      <button onclick="applyChord()" class="px-4 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-bold shrink-0 shadow-lg flex items-center gap-1">
+        <i class="fa-solid fa-plus"></i> Place Chord
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTROL TOOLBAR (Transpose, AutoScroll, Clear) -->
+  <div id="perform-toolbar" class="bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center justify-between shrink-0">
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-bold text-slate-400">KEY:</span>
+      <div class="flex items-center bg-slate-950 rounded-lg border border-slate-800 p-0.5">
+        <button onclick="transpose(-1)" class="w-7 h-7 flex items-center justify-center text-slate-300 hover:bg-slate-800 rounded font-bold text-xs">-1</button>
+        <span id="key-display" class="px-2 text-xs font-bold text-brand-500 min-w-[2.5rem] text-center">ORIG</span>
+        <button onclick="transpose(1)" class="w-7 h-7 flex items-center justify-center text-slate-300 hover:bg-slate-800 rounded font-bold text-xs">+1</button>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div id="scroll-controls" class="flex items-center gap-1.5">
+        <button id="btn-autoscroll" onclick="toggleAutoScroll()" class="px-3 py-1.5 bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1">
+          <i class="fa-solid fa-angles-down"></i> <span>AutoScroll</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN VIEWPORT CONTAINER -->
+  <main class="flex-1 relative overflow-hidden bg-slate-950">
+    
+    <!-- SETUP MODE VIEW -->
+    <div id="view-setup" class="absolute inset-0 p-4 flex flex-col gap-3">
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+        <span>Paste Raw Lyrics Below</span>
+        <span class="text-[10px] text-slate-500 lowercase">chords can be attached next</span>
+      </label>
+      <textarea id="raw-lyrics-input" class="flex-1 w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-brand-500 resize-none custom-scrollbar font-mono" placeholder="Paste your song lyrics here...&#10;&#10;Example:&#10;Wise men say only fools rush in&#10;But I can't help falling in love with you"></textarea>
+      <button onclick="saveSetupLyrics()" class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
+        <i class="fa-solid fa-arrow-right"></i> Done & Edit Chords
+      </button>
+    </div>
+
+    <!-- EDIT & PERFORM CANVAS VIEW -->
+    <div id="view-canvas" class="absolute inset-0 overflow-y-auto custom-scrollbar p-6 space-y-6">
+      <div id="song-render-area" class="max-w-3xl mx-auto"></div>
+    </div>
+
+  </main>
+
+  <script>
+    // APP STATE
+    let currentMode = 'edit'; // 'setup', 'edit', 'perform'
+    let rawText = "Wise men say\nOnly fools rush in\nBut I can't help\nFalling in love with you";
+    let parsedLines = [];
+    let selectedCharTarget = null; // { lineIndex, tokenIndex, charIndex }
+    
+    let activeRoot = 'C';
+    let activeAccidental = '';
+    let activeQuality = '';
+    let currentTransposeSemitones = 0;
+    
+    let isAutoScrolling = false;
+    let autoScrollInterval = null;
+
+    const CHROMATIC_SCALE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+    // INITIALIZATION
+    window.onload = () => {
+      document.getElementById('raw-lyrics-input').value = rawText;
+      parseLyricsToState();
+      setMode('edit');
+    };
+
+    function setMode(mode) {
+      currentMode = mode;
+      
+      // Update Tab Styles
+      ['setup', 'edit', 'perform'].forEach(m => {
+        const btn = document.getElementById(`btn-mode-${m}`);
+        if (m === mode) {
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 bg-brand-600 text-white shadow-md";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 text-slate-400 hover:text-slate-200";
+        }
+      });
+
+      // View visibility
+      const editBar = document.getElementById('edit-chord-bar');
+      const setupView = document.getElementById('view-setup');
+      const canvasView = document.getElementById('view-canvas');
+
+      if (mode === 'setup') {
+        editBar.classList.add('hidden');
+        setupView.classList.remove('hidden');
+        canvasView.classList.add('hidden');
+      } else if (mode === 'edit') {
+        editBar.classList.remove('hidden');
+        setupView.classList.add('hidden');
+        canvasView.classList.remove('hidden');
+        renderCanvas();
+      } else if (mode === 'perform') {
+        editBar.classList.add('hidden');
+        setupView.classList.add('hidden');
+        canvasView.classList.remove('hidden');
+        clearSelectedChar();
+        renderCanvas();
+      }
+    }
+
+    function saveSetupLyrics() {
+      rawText = document.getElementById('raw-lyrics-input').value;
+      parseLyricsToState();
+      setMode('edit');
+    }
+
+    function parseLyricsToState() {
+      const lines = rawText.split('\n');
+      parsedLines = lines.map((lineStr, lIdx) => {
+        const words = lineStr.split(' ');
+        const tokens = words.map((wStr, tIdx) => {
+          const chars = wStr.split('').map((cStr, cIdx) => ({
+            char: cStr,
+            chord: null
+          }));
+          return { word: wStr, chars: chars.length > 0 ? chars : [{ char: ' ', chord: null }] };
+        });
+        return { tokens };
+      });
+    }
+
+    function renderCanvas() {
+      const container = document.getElementById('song-render-area');
+      container.innerHTML = '';
+
+      parsedLines.forEach((line, lIdx) => {
+        const lineEl = document.createElement('div');
+        lineEl.className = 'line-row';
+
+        line.tokens.forEach((token, tIdx) => {
+          const wordEl = document.createElement('div');
+          wordEl.className = 'word-token';
+
+          token.chars.forEach((cObj, cIdx) => {
+            const charEl = document.createElement('span');
+            
+            const isSelected = selectedCharTarget && 
+              selectedCharTarget.lineIndex === lIdx && 
+              selectedCharTarget.tokenIndex === tIdx && 
+              selectedCharTarget.charIndex === cIdx;
+
+            const hasChord = Boolean(cObj.chord);
+            
+            charEl.className = `char-node ${isSelected ? 'selected-char' : ''} ${hasChord ? 'has-chord' : ''}`;
+            charEl.innerText = cObj.char === ' ' ? '\u00A0' : cObj.char;
+
+            // Render Chord Badge if Attached
+            if (cObj.chord) {
+              const chordBadge = document.createElement('div');
+              chordBadge.className = 'anchored-chord bg-brand-600 text-white border border-brand-500';
+              chordBadge.innerText = transposeChordString(cObj.chord, currentTransposeSemitones);
+              
+              if (currentMode === 'edit') {
+                chordBadge.onclick = (e) => {
+                  e.stopPropagation();
+                  cObj.chord = null; // Remove chord on tap in edit mode
+                  renderCanvas();
+                };
+              }
+              charEl.appendChild(chordBadge);
+            }
+
+            // Click listener for target selection
+            if (currentMode === 'edit') {
+              charEl.onclick = (e) => {
+                e.stopPropagation();
+                selectedCharTarget = { lineIndex: lIdx, tokenIndex: tIdx, charIndex: cIdx };
+                document.getElementById('target-indicator').innerText = `Selected: "${cObj.char}" (Line ${lIdx + 1})`;
+                renderCanvas();
+              };
+            }
+
+            wordEl.appendChild(charEl);
+          });
+
+          lineEl.appendChild(wordEl);
+        });
+
+        container.appendChild(lineEl);
+      });
+    }
+
+    // CHORD SELECTION & PLACEMENT LOGIC
+    function selectRoot(r) {
+      activeRoot = r;
+      updateChordBarUI();
+    }
+
+    function toggleAccidental(acc) {
+      activeAccidental = activeAccidental === acc ? '' : acc;
+      updateChordBarUI();
+    }
+
+    function selectQuality(q) {
+      activeQuality = q;
+      updateChordBarUI();
+    }
+
+    function updateChordBarUI() {
+      // Highlight accidentals
+      document.getElementById('btn-sharp').className = `px-2.5 py-1.5 rounded-lg border font-bold text-xs ${activeAccidental === '#' ? 'bg-brand-600 border-brand-500 text-white' : 'bg-slate-800 border-slate-700'}`;
+      document.getElementById('btn-flat').className = `px-2.5 py-1.5 rounded-lg border font-bold text-xs ${activeAccidental === 'b' ? 'bg-brand-600 border-brand-500 text-white' : 'bg-slate-800 border-slate-700'}`;
+    }
+
+    function applyChord() {
+      if (!selectedCharTarget) {
+        alert("Please tap on a lyric character first to anchor the chord!");
+        return;
+      }
+      const fullChord = `${activeRoot}${activeAccidental}${activeQuality}`;
+      const { lineIndex, tokenIndex, charIndex } = selectedCharTarget;
+      
+      parsedLines[lineIndex].tokens[tokenIndex].chars[charIndex].chord = fullChord;
+      renderCanvas();
+    }
+
+    function clearSelectedChar() {
+      selectedCharTarget = null;
+      document.getElementById('target-indicator').innerText = 'Tap any letter below to anchor chord';
+      renderCanvas();
+    }
+
+    // TRANSPOSITION LOGIC
+    function transpose(semitones) {
+      currentTransposeSemitones += semitones;
+      document.getElementById('key-display').innerText = currentTransposeSemitones === 0 ? 'ORIG' : (currentTransposeSemitones > 0 ? `+${currentTransposeSemitones}` : `${currentTransposeSemitones}`);
+      renderCanvas();
+    }
+
+    function transposeChordString(chordStr, semitones) {
+      if (semitones === 0) return chordStr;
+      
+      return chordStr.replace(/([A-G][#b]?)/g, (match) => {
+        return shiftNote(match, semitones);
+      });
+    }
+
+    function shiftNote(note, semitones) {
+      let normalized = note;
+      if (note === 'Db') normalized = 'C#';
+      if (note === 'Eb') normalized = 'D#';
+      if (note === 'Gb') normalized = 'F#';
+      if (note === 'Ab') normalized = 'G#';
+      if (note === 'Bb') normalized = 'A#';
+
+      let idx = CHROMATIC_SCALE.indexOf(normalized);
+      if (idx === -1) return note;
+
+      let newIdx = (idx + semitones) % 12;
+      if (newIdx < 0) newIdx += 12;
+      return CHROMATIC_SCALE[newIdx];
+    }
+
+    // AUTO SCROLL
+    function toggleAutoScroll() {
+      isAutoScrolling = !isAutoScrolling;
+      const btn = document.getElementById('btn-autoscroll');
+      const container = document.getElementById('view-canvas');
+
+      if (isAutoScrolling) {
+        btn.className = "px-3 py-1.5 bg-brand-600 border border-brand-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1 animate-pulse";
+        autoScrollInterval = setInterval(() => {
+          container.scrollTop += 1;
+        }, 40);
+      } else {
+        btn.className = "px-3 py-1.5 bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1";
+        clearInterval(autoScrollInterval);
+      }
+    }
+  </script>
+</body>
+</html>
