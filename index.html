@@ -25,30 +25,29 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
     
-    .char-node { position: relative; display: inline-block; cursor: pointer; transition: background 0.15s; border-radius: 2px; padding: 0 0.5px; }
+    .char-node { position: relative; display: inline-block; cursor: pointer; transition: background 0.15s; border-radius: 2px; padding: 0 1px; }
     .char-node:hover { background-color: rgba(34, 197, 94, 0.25); }
     .char-node.selected-char { background-color: rgba(34, 197, 94, 0.4); outline: 2px solid #22c55e; }
-    .char-node.has-chord { margin-top: 1.4rem; }
     
     .anchored-chord {
       position: absolute;
-      bottom: 100%;
+      bottom: 110%;
       left: 50%;
       transform: translateX(-50%);
       font-weight: 800;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       line-height: 1;
-      padding: 2px 5px;
+      padding: 3px 6px;
       border-radius: 4px;
       white-space: nowrap;
       pointer-events: auto;
       user-select: none;
-      z-index: 10;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      z-index: 20;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
     
-    .word-token { display: inline-flex; flex-wrap: nowrap; margin-right: 0.45rem; margin-bottom: 0.5rem; position: relative; }
-    .line-row { display: flex; flex-wrap: wrap; align-items: flex-end; min-height: 2.2rem; margin-bottom: 0.75rem; }
+    .word-token { display: inline-flex; flex-wrap: nowrap; margin-right: 0.5rem; margin-top: 1.6rem; position: relative; }
+    .line-row { display: flex; flex-wrap: wrap; align-items: flex-end; min-height: 2.8rem; margin-bottom: 0.75rem; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 h-screen flex flex-col overflow-hidden select-none">
@@ -84,24 +83,24 @@
     <div class="flex items-center justify-between">
       <div class="text-[11px] font-bold uppercase tracking-wider text-brand-500 flex items-center gap-1.5">
         <i class="fa-solid fa-crosshairs"></i>
-        <span id="target-indicator">Tap any letter below to anchor chord</span>
+        <span id="target-indicator">Tap any letter below to select target</span>
       </div>
       <div class="flex items-center gap-1.5">
-        <button onclick="clearSelectedChar()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded border border-slate-700">Clear Selection</button>
+        <button onclick="clearSelectedChar()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded border border-slate-700">Clear</button>
       </div>
     </div>
 
-    <!-- Root Note Selector -->
+    <!-- Root Note Selector (One Tap Places Chord) -->
     <div class="flex items-center gap-1 overflow-x-auto custom-scrollbar pb-1">
       <span class="text-[10px] font-bold text-slate-400 w-10 shrink-0 uppercase">Root:</span>
       <div class="flex items-center gap-1">
-        <button onclick="selectRoot('C')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">C</button>
-        <button onclick="selectRoot('D')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">D</button>
-        <button onclick="selectRoot('E')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">E</button>
-        <button onclick="selectRoot('F')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">F</button>
-        <button onclick="selectRoot('G')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">G</button>
-        <button onclick="selectRoot('A')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">A</button>
-        <button onclick="selectRoot('B')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">B</button>
+        <button onclick="selectAndPlaceRoot('C')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">C</button>
+        <button onclick="selectAndPlaceRoot('D')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">D</button>
+        <button onclick="selectAndPlaceRoot('E')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">E</button>
+        <button onclick="selectAndPlaceRoot('F')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">F</button>
+        <button onclick="selectAndPlaceRoot('G')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">G</button>
+        <button onclick="selectAndPlaceRoot('A')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">A</button>
+        <button onclick="selectAndPlaceRoot('B')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">B</button>
       </div>
       <div class="h-5 w-[1px] bg-slate-700 mx-1 shrink-0"></div>
       <div class="flex items-center gap-1 shrink-0">
@@ -114,24 +113,20 @@
     <div class="flex items-center gap-1 overflow-x-auto custom-scrollbar pb-1">
       <span class="text-[10px] font-bold text-slate-400 w-10 shrink-0 uppercase">Type:</span>
       <div class="flex items-center gap-1">
-        <button onclick="selectQuality('')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">Maj</button>
-        <button onclick="selectQuality('m')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">m</button>
-        <button onclick="selectQuality('7')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">7</button>
-        <button onclick="selectQuality('maj7')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">maj7</button>
-        <button onclick="selectQuality('m7')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">m7</button>
-        <button onclick="selectQuality('sus4')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">sus4</button>
-        <button onclick="selectQuality('dim')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">dim</button>
-        <button onclick="selectQuality('add9')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">add9</button>
+        <button onclick="selectAndPlaceQuality('')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">Maj</button>
+        <button onclick="selectAndPlaceQuality('m')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">m</button>
+        <button onclick="selectAndPlaceQuality('7')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">7</button>
+        <button onclick="selectAndPlaceQuality('maj7')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">maj7</button>
+        <button onclick="selectAndPlaceQuality('m7')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">m7</button>
+        <button onclick="selectAndPlaceQuality('sus4')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">sus4</button>
+        <button onclick="selectAndPlaceQuality('dim')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">dim</button>
+        <button onclick="selectAndPlaceQuality('add9')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">add9</button>
       </div>
-      <div class="h-5 w-[1px] bg-slate-700 mx-1 shrink-0"></div>
-      <button onclick="applyChord()" class="px-4 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-bold shrink-0 shadow-lg flex items-center gap-1">
-        <i class="fa-solid fa-plus"></i> Place Chord
-      </button>
     </div>
   </div>
 
-  <!-- CONTROL TOOLBAR (Transpose, AutoScroll, Clear) -->
-  <div id="perform-toolbar" class="bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center justify-between shrink-0">
+  <!-- CONTROL TOOLBAR (Transpose, AutoScroll) -->
+  <div id="perform-toolbar" class="bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center justify-between shrink-0 z-10">
     <div class="flex items-center gap-2">
       <span class="text-xs font-bold text-slate-400">KEY:</span>
       <div class="flex items-center bg-slate-950 rounded-lg border border-slate-800 p-0.5">
@@ -142,11 +137,9 @@
     </div>
 
     <div class="flex items-center gap-3">
-      <div id="scroll-controls" class="flex items-center gap-1.5">
-        <button id="btn-autoscroll" onclick="toggleAutoScroll()" class="px-3 py-1.5 bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1">
-          <i class="fa-solid fa-angles-down"></i> <span>AutoScroll</span>
-        </button>
-      </div>
+      <button id="btn-autoscroll" onclick="toggleAutoScroll()" class="px-3 py-1.5 bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1">
+        <i class="fa-solid fa-angles-down"></i> <span>AutoScroll</span>
+      </button>
     </div>
   </div>
 
@@ -167,13 +160,12 @@
 
     <!-- EDIT & PERFORM CANVAS VIEW -->
     <div id="view-canvas" class="absolute inset-0 overflow-y-auto custom-scrollbar p-6 space-y-6">
-      <div id="song-render-area" class="max-w-3xl mx-auto"></div>
+      <div id="song-render-area" class="max-w-3xl mx-auto pt-4"></div>
     </div>
 
   </main>
 
   <script>
-    // APP STATE
     let currentMode = 'setup';
     let rawText = "";
     let parsedLines = [];
@@ -194,14 +186,12 @@
     };
 
     function setMode(mode) {
-      // Auto-parse text when navigating away from setup mode
       if (currentMode === 'setup' && mode !== 'setup') {
         saveSetupLyrics();
       }
 
       currentMode = mode;
       
-      // Update Tab Styles
       ['setup', 'edit', 'perform'].forEach(m => {
         const btn = document.getElementById(`btn-mode-${m}`);
         if (m === mode) {
@@ -278,9 +268,7 @@
               selectedCharTarget.tokenIndex === tIdx && 
               selectedCharTarget.charIndex === cIdx;
 
-            const hasChord = Boolean(cObj.chord);
-            
-            charEl.className = `char-node ${isSelected ? 'selected-char' : ''} ${hasChord ? 'has-chord' : ''}`;
+            charEl.className = `char-node ${isSelected ? 'selected-char' : ''}`;
             charEl.innerText = cObj.char === ' ' ? '\u00A0' : cObj.char;
 
             if (cObj.chord) {
@@ -291,7 +279,7 @@
               if (currentMode === 'edit') {
                 chordBadge.onclick = (e) => {
                   e.stopPropagation();
-                  cObj.chord = null;
+                  cObj.chord = null; // Delete chord on tap
                   renderCanvas();
                 };
               }
@@ -302,7 +290,7 @@
               charEl.onclick = (e) => {
                 e.stopPropagation();
                 selectedCharTarget = { lineIndex: lIdx, tokenIndex: tIdx, charIndex: cIdx };
-                document.getElementById('target-indicator').innerText = `Selected: "${cObj.char}" (Line ${lIdx + 1})`;
+                document.getElementById('target-indicator').innerText = `Target: "${cObj.char}" (Line ${lIdx + 1})`;
                 renderCanvas();
               };
             }
@@ -317,29 +305,30 @@
       });
     }
 
-    function selectRoot(r) {
+    function selectAndPlaceRoot(r) {
       activeRoot = r;
-      updateChordBarUI();
+      applyChordDirectly();
+    }
+
+    function selectAndPlaceQuality(q) {
+      activeQuality = q;
+      applyChordDirectly();
     }
 
     function toggleAccidental(acc) {
       activeAccidental = activeAccidental === acc ? '' : acc;
-      updateChordBarUI();
+      updateAccidentalUI();
+      applyChordDirectly();
     }
 
-    function selectQuality(q) {
-      activeQuality = q;
-      updateChordBarUI();
-    }
-
-    function updateChordBarUI() {
+    function updateAccidentalUI() {
       document.getElementById('btn-sharp').className = `px-2.5 py-1.5 rounded-lg border font-bold text-xs ${activeAccidental === '#' ? 'bg-brand-600 border-brand-500 text-white' : 'bg-slate-800 border-slate-700'}`;
       document.getElementById('btn-flat').className = `px-2.5 py-1.5 rounded-lg border font-bold text-xs ${activeAccidental === 'b' ? 'bg-brand-600 border-brand-500 text-white' : 'bg-slate-800 border-slate-700'}`;
     }
 
-    function applyChord() {
+    function applyChordDirectly() {
       if (!selectedCharTarget) {
-        alert("Please tap on a lyric character first to anchor the chord!");
+        alert("Please tap a letter in the lyrics below first!");
         return;
       }
       const fullChord = `${activeRoot}${activeAccidental}${activeQuality}`;
@@ -351,7 +340,7 @@
 
     function clearSelectedChar() {
       selectedCharTarget = null;
-      document.getElementById('target-indicator').innerText = 'Tap any letter below to anchor chord';
+      document.getElementById('target-indicator').innerText = 'Tap any letter below to select target';
       renderCanvas();
     }
 
