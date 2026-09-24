@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>ChordCraft Studio</title>
+  <title>ChordCraft Studio - Dot Aligned</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -25,6 +25,14 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
     
+    /* Low opacity dot guides for chord line */
+    .dot-guide {
+      opacity: 0.18;
+      color: #94a3b8;
+      user-select: none;
+      font-weight: bold;
+    }
+
     .char-node { position: relative; display: inline-block; cursor: pointer; transition: background 0.15s; border-radius: 2px; font-family: monospace; }
     .char-node:hover { background-color: rgba(34, 197, 94, 0.25); }
     .char-node.selected-char { background-color: rgba(34, 197, 94, 0.4); outline: 2px solid #22c55e; }
@@ -60,7 +68,7 @@
       </div>
       <div>
         <h1 class="font-bold text-sm tracking-wide text-white leading-tight">ChordCraft</h1>
-        <p class="text-[10px] text-slate-400 font-medium">Anchor Studio</p>
+        <p class="text-[10px] text-slate-400 font-medium">Dot-Aligned Studio</p>
       </div>
     </div>
 
@@ -153,9 +161,9 @@
     <div id="view-setup" class="absolute inset-0 p-4 flex flex-col gap-3">
       <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
         <span>Paste Raw Lyrics Below</span>
-        <span class="text-[10px] text-slate-500 lowercase">chords above lyrics will auto-align</span>
+        <span class="text-[10px] text-slate-500 lowercase">chords with dots or spaces will align</span>
       </label>
-      <textarea id="raw-lyrics-input" class="flex-1 w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-brand-500 resize-none custom-scrollbar font-mono" placeholder="Paste your lyrics here..."></textarea>
+      <textarea id="raw-lyrics-input" class="flex-1 w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-brand-500 resize-none custom-scrollbar font-mono" placeholder="Paste your lyrics or dotted chord lines here..."></textarea>
       <button onclick="saveSetupLyrics()" class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
         <i class="fa-solid fa-arrow-right"></i> Save & Edit Chords
       </button>
@@ -236,9 +244,9 @@
     }
 
     function isChordLine(line) {
-      const trimmed = line.trim();
-      if (!trimmed) return false;
-      const tokens = trimmed.split(/\s+/);
+      const cleaned = line.replace(/\./g, ' ').trim();
+      if (!cleaned) return false;
+      const tokens = cleaned.split(/\s+/);
       const chordPattern = /^[A-G][#b]?(m|maj|dim|aug|sus\d?|add\d?|\d)*(\/[A-G][#b]?)?$/;
       let chordMatches = 0;
       tokens.forEach(t => {
@@ -270,6 +278,7 @@
       const chars = lyricStr.split('').map(c => ({ char: c, chord: null }));
 
       if (chordStr) {
+        // Match chords even if surrounded by dots
         const regex = /([A-G][#b]?(?:m|maj|dim|aug|sus\d?|add\d?|\d)*(?:\/[A-G][#b]?)?)/g;
         let match;
         while ((match = regex.exec(chordStr)) !== null) {
@@ -451,7 +460,7 @@
       }
     }
 
-    // Export using Non-Breaking / Fixed Width Invisible Characters (\u2007)
+    // Export using DOTS (.) so notes apps cannot collapse spacing
     function exportSongText() {
       let output = "";
 
@@ -463,8 +472,8 @@
           });
         });
 
-        // Use figure space (\u2007) for non-collapsible width alignment
-        let chordLineArr = new Array(allChars.length).fill('\u2007');
+        // Fill empty positions with '.' to preserve spacing in proportional fonts
+        let chordLineArr = new Array(allChars.length).fill('.');
         let lyricLineArr = [];
         let hasChords = false;
 
@@ -490,7 +499,7 @@
       });
 
       navigator.clipboard.writeText(output).then(() => {
-        alert("Song copied with invisible fixed spacing! Try pasting in your Notes app.");
+        alert("Song copied with dot spacing! Guaranteed centered alignment in Notes app.");
       }).catch(() => {
         alert("Copied output:\n\n" + output);
       });
