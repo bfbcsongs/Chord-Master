@@ -125,7 +125,7 @@
     </div>
   </div>
 
-  <!-- CONTROL TOOLBAR (Transpose, AutoScroll) -->
+  <!-- CONTROL TOOLBAR (Transpose, AutoScroll, Save/Copy) -->
   <div id="perform-toolbar" class="bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center justify-between shrink-0 z-10">
     <div class="flex items-center gap-2">
       <span class="text-xs font-bold text-slate-400">KEY:</span>
@@ -136,7 +136,10 @@
       </div>
     </div>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2">
+      <button onclick="exportSongText()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-brand-500 rounded-lg text-xs font-semibold flex items-center gap-1">
+        <i class="fa-solid fa-copy"></i> <span>Copy Song</span>
+      </button>
       <button id="btn-autoscroll" onclick="toggleAutoScroll()" class="px-3 py-1.5 bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1">
         <i class="fa-solid fa-angles-down"></i> <span>AutoScroll</span>
       </button>
@@ -154,7 +157,7 @@
       </label>
       <textarea id="raw-lyrics-input" class="flex-1 w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-brand-500 resize-none custom-scrollbar font-mono" placeholder="Paste your song lyrics here..."></textarea>
       <button onclick="saveSetupLyrics()" class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
-        <i class="fa-solid fa-arrow-right"></i> Done & Edit Chords
+        <i class="fa-solid fa-arrow-right"></i> Save & Edit Chords
       </button>
     </div>
 
@@ -182,6 +185,11 @@
     const CHROMATIC_SCALE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
     window.onload = () => {
+      // Restore saved lyrics from LocalStorage if available
+      const savedSong = localStorage.getItem('chordcraft_raw_text');
+      if (savedSong) {
+        document.getElementById('raw-lyrics-input').value = savedSong;
+      }
       setMode('setup');
     };
 
@@ -225,6 +233,7 @@
 
     function saveSetupLyrics() {
       rawText = document.getElementById('raw-lyrics-input').value;
+      localStorage.setItem('chordcraft_raw_text', rawText);
       parseLyricsToState();
     }
 
@@ -388,6 +397,35 @@
         btn.className = "px-3 py-1.5 bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1";
         clearInterval(autoScrollInterval);
       }
+    }
+
+    function exportSongText() {
+      let output = "";
+      parsedLines.forEach(line => {
+        let chordLine = "";
+        let lyricLine = "";
+        
+        line.tokens.forEach(token => {
+          token.chars.forEach(cObj => {
+            const chord = cObj.chord ? transposeChordString(cObj.chord, currentTransposeSemitones) : "";
+            chordLine += chord.padEnd(Math.max(chord.length, 1), " ");
+            lyricLine += cObj.char;
+          });
+          chordLine += " ";
+          lyricLine += " ";
+        });
+        
+        if (chordLine.trim().length > 0) {
+          output += chordLine + "\n";
+        }
+        output += lyricLine + "\n";
+      });
+
+      navigator.clipboard.writeText(output).then(() => {
+        alert("Song with chords copied to clipboard!");
+      }).catch(() => {
+        alert("Failed to copy automatically. Copying text directly:\n\n" + output);
+      });
     }
   </script>
 </body>
