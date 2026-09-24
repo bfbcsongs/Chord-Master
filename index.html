@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>ChordCraft Studio - Dot Aligned</title>
+  <title>ChordCraft Studio - Underscore Aligned</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -25,14 +25,6 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
     
-    /* Low opacity dot guides for chord line */
-    .dot-guide {
-      opacity: 0.18;
-      color: #94a3b8;
-      user-select: none;
-      font-weight: bold;
-    }
-
     .char-node { position: relative; display: inline-block; cursor: pointer; transition: background 0.15s; border-radius: 2px; font-family: monospace; }
     .char-node:hover { background-color: rgba(34, 197, 94, 0.25); }
     .char-node.selected-char { background-color: rgba(34, 197, 94, 0.4); outline: 2px solid #22c55e; }
@@ -68,7 +60,7 @@
       </div>
       <div>
         <h1 class="font-bold text-sm tracking-wide text-white leading-tight">ChordCraft</h1>
-        <p class="text-[10px] text-slate-400 font-medium">Dot-Aligned Studio</p>
+        <p class="text-[10px] text-slate-400 font-medium">Underscore-Aligned</p>
       </div>
     </div>
 
@@ -91,7 +83,7 @@
     <div class="flex items-center justify-between">
       <div class="text-[11px] font-bold uppercase tracking-wider text-brand-500 flex items-center gap-1.5">
         <i class="fa-solid fa-crosshairs"></i>
-        <span id="target-indicator">Tap any letter below to select target</span>
+        <span id="target-indicator">Pindutin ang letra sa ibaba para lagyan ng chord</span>
       </div>
       <div class="flex items-center gap-1.5">
         <button onclick="clearSelectedChar()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded border border-slate-700">Clear</button>
@@ -102,13 +94,13 @@
     <div class="flex items-center gap-1 overflow-x-auto custom-scrollbar pb-1">
       <span class="text-[10px] font-bold text-slate-400 w-10 shrink-0 uppercase">Root:</span>
       <div class="flex items-center gap-1">
-        <button onclick="selectAndPlaceRoot('C')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">C</button>
-        <button onclick="selectAndPlaceRoot('D')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">D</button>
-        <button onclick="selectAndPlaceRoot('E')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">E</button>
-        <button onclick="selectAndPlaceRoot('F')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">F</button>
-        <button onclick="selectAndPlaceRoot('G')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">G</button>
-        <button onclick="selectAndPlaceRoot('A')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">A</button>
-        <button onclick="selectAndPlaceRoot('B')" class="root-btn px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">B</button>
+        <button onclick="selectAndPlaceRoot('C')" class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">C</button>
+        <button onclick="selectAndPlaceRoot('D')" class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">D</button>
+        <button onclick="selectAndPlaceRoot('E')" class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">E</button>
+        <button onclick="selectAndPlaceRoot('F')" class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">F</button>
+        <button onclick="selectAndPlaceRoot('G')" class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">G</button>
+        <button onclick="selectAndPlaceRoot('A')" class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">A</button>
+        <button onclick="selectAndPlaceRoot('B')" class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-bold text-xs hover:bg-brand-600 transition">B</button>
       </div>
       <div class="h-5 w-[1px] bg-slate-700 mx-1 shrink-0"></div>
       <div class="flex items-center gap-1 shrink-0">
@@ -121,14 +113,14 @@
     <div class="flex items-center gap-1 overflow-x-auto custom-scrollbar pb-1">
       <span class="text-[10px] font-bold text-slate-400 w-10 shrink-0 uppercase">Type:</span>
       <div class="flex items-center gap-1">
-        <button onclick="selectAndPlaceQuality('')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">Maj</button>
-        <button onclick="selectAndPlaceQuality('m')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">m</button>
-        <button onclick="selectAndPlaceQuality('7')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">7</button>
-        <button onclick="selectAndPlaceQuality('maj7')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">maj7</button>
-        <button onclick="selectAndPlaceQuality('m7')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">m7</button>
-        <button onclick="selectAndPlaceQuality('sus4')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">sus4</button>
-        <button onclick="selectAndPlaceQuality('dim')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">dim</button>
-        <button onclick="selectAndPlaceQuality('add9')" class="quality-btn px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">add9</button>
+        <button onclick="selectAndPlaceQuality('')" class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">Maj</button>
+        <button onclick="selectAndPlaceQuality('m')" class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">m</button>
+        <button onclick="selectAndPlaceQuality('7')" class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">7</button>
+        <button onclick="selectAndPlaceQuality('maj7')" class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">maj7</button>
+        <button onclick="selectAndPlaceQuality('m7')" class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">m7</button>
+        <button onclick="selectAndPlaceQuality('sus4')" class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">sus4</button>
+        <button onclick="selectAndPlaceQuality('dim')" class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">dim</button>
+        <button onclick="selectAndPlaceQuality('add9')" class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold">add9</button>
       </div>
     </div>
   </div>
@@ -160,10 +152,10 @@
     <!-- SETUP MODE VIEW -->
     <div id="view-setup" class="absolute inset-0 p-4 flex flex-col gap-3">
       <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-        <span>Paste Raw Lyrics Below</span>
-        <span class="text-[10px] text-slate-500 lowercase">chords with dots or spaces will align</span>
+        <span>I-paste ang Lyrics Dito</span>
+        <span class="text-[10px] text-slate-500 lowercase">mga lumang chord lines na may dots o underscores ay maiintindihan din</span>
       </label>
-      <textarea id="raw-lyrics-input" class="flex-1 w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-brand-500 resize-none custom-scrollbar font-mono" placeholder="Paste your lyrics or dotted chord lines here..."></textarea>
+      <textarea id="raw-lyrics-input" class="flex-1 w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-brand-500 resize-none custom-scrollbar font-mono" placeholder="I-paste ang lyrics o song chords mo rito..."></textarea>
       <button onclick="saveSetupLyrics()" class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
         <i class="fa-solid fa-arrow-right"></i> Save & Edit Chords
       </button>
@@ -244,7 +236,7 @@
     }
 
     function isChordLine(line) {
-      const cleaned = line.replace(/\./g, ' ').trim();
+      const cleaned = line.replace(/[\._]/g, ' ').trim();
       if (!cleaned) return false;
       const tokens = cleaned.split(/\s+/);
       const chordPattern = /^[A-G][#b]?(m|maj|dim|aug|sus\d?|add\d?|\d)*(\/[A-G][#b]?)?$/;
@@ -278,7 +270,6 @@
       const chars = lyricStr.split('').map(c => ({ char: c, chord: null }));
 
       if (chordStr) {
-        // Match chords even if surrounded by dots
         const regex = /([A-G][#b]?(?:m|maj|dim|aug|sus\d?|add\d?|\d)*(?:\/[A-G][#b]?)?)/g;
         let match;
         while ((match = regex.exec(chordStr)) !== null) {
@@ -323,7 +314,7 @@
       container.innerHTML = '';
 
       if (parsedLines.length === 0) {
-        container.innerHTML = '<div class="text-center text-slate-500 py-12">No lyrics pasted yet. Tap Setup to add lyrics.</div>';
+        container.innerHTML = '<div class="text-center text-slate-500 py-12">Walang lyrics. I-tap ang Setup para maglagay.</div>';
         return;
       }
 
@@ -403,7 +394,7 @@
 
     function applyChordDirectly() {
       if (!selectedCharTarget) {
-        alert("Please tap a letter in the lyrics below first!");
+        alert("Pumili muna ng letra sa lyrics sa ibaba!");
         return;
       }
       const fullChord = `${activeRoot}${activeAccidental}${activeQuality}`;
@@ -415,7 +406,7 @@
 
     function clearSelectedChar() {
       selectedCharTarget = null;
-      document.getElementById('target-indicator').innerText = 'Tap any letter below to select target';
+      document.getElementById('target-indicator').innerText = 'Pindutin ang letra sa ibaba para lagyan ng chord';
       renderCanvas();
     }
 
@@ -460,7 +451,7 @@
       }
     }
 
-    // Export using DOTS (.) so notes apps cannot collapse spacing
+    /* EXPORT USING UNDERSCORES (_) FOR MAXIMUM ALIGNMENT IN NOTES APPS */
     function exportSongText() {
       let output = "";
 
@@ -472,8 +463,7 @@
           });
         });
 
-        // Fill empty positions with '.' to preserve spacing in proportional fonts
-        let chordLineArr = new Array(allChars.length).fill('.');
+        let chordLineArr = new Array(allChars.length).fill('_');
         let lyricLineArr = [];
         let hasChords = false;
 
@@ -499,9 +489,9 @@
       });
 
       navigator.clipboard.writeText(output).then(() => {
-        alert("Song copied with dot spacing! Guaranteed centered alignment in Notes app.");
+        alert("Na-copy na! Gamit na nito ang underscores (_) kaya exact align na ito kahit saang Notes app!");
       }).catch(() => {
-        alert("Copied output:\n\n" + output);
+        alert("Kopyahin ang text na ito:\n\n" + output);
       });
     }
   </script>
