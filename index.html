@@ -20,7 +20,7 @@
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { font-family: monospace, monospace; touch-action: manipulation; }
+    body { font-family: monospace; touch-action: manipulation; }
     .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
@@ -451,6 +451,7 @@
       }
     }
 
+    // Export using Non-Breaking / Fixed Width Invisible Characters (\u2007)
     function exportSongText() {
       let output = "";
 
@@ -462,7 +463,8 @@
           });
         });
 
-        let chordLineArr = new Array(allChars.length).fill(' ');
+        // Use figure space (\u2007) for non-collapsible width alignment
+        let chordLineArr = new Array(allChars.length).fill('\u2007');
         let lyricLineArr = [];
         let hasChords = false;
 
@@ -482,13 +484,13 @@
         });
 
         if (hasChords) {
-          output += chordLineArr.join('').trimEnd() + "\n";
+          output += chordLineArr.join('') + "\n";
         }
         output += lyricLineArr.join('') + "\n";
       });
 
       navigator.clipboard.writeText(output).then(() => {
-        alert("Song copied! Paste it in your notes app.");
+        alert("Song copied with invisible fixed spacing! Try pasting in your Notes app.");
       }).catch(() => {
         alert("Copied output:\n\n" + output);
       });
