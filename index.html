@@ -20,33 +20,33 @@
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; touch-action: manipulation; }
+    body { font-family: monospace, monospace, system-ui; touch-action: manipulation; }
     .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
     
-    .char-node { position: relative; display: inline-block; cursor: pointer; transition: background 0.15s; border-radius: 2px; padding: 0 1px; }
+    .char-node { position: relative; display: inline-block; cursor: pointer; transition: background 0.15s; border-radius: 2px; font-family: monospace; }
     .char-node:hover { background-color: rgba(34, 197, 94, 0.25); }
     .char-node.selected-char { background-color: rgba(34, 197, 94, 0.4); outline: 2px solid #22c55e; }
     
     .anchored-chord {
       position: absolute;
       bottom: 110%;
-      left: 50%;
-      transform: translateX(-50%);
-      font-weight: 800;
-      font-size: 0.8rem;
+      left: 0;
+      font-weight: bold;
+      font-size: 0.85rem;
       line-height: 1;
-      padding: 3px 6px;
+      padding: 2px 4px;
       border-radius: 4px;
       white-space: nowrap;
       pointer-events: auto;
       user-select: none;
       z-index: 20;
       box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+      font-family: monospace;
     }
     
-    .word-token { display: inline-flex; flex-wrap: nowrap; margin-right: 0.5rem; margin-top: 1.6rem; position: relative; }
+    .word-token { display: inline-flex; flex-wrap: nowrap; margin-right: 0.5rem; margin-top: 1.8rem; position: relative; }
     .line-row { display: flex; flex-wrap: wrap; align-items: flex-end; min-height: 2.8rem; margin-bottom: 0.75rem; }
   </style>
 </head>
@@ -90,7 +90,7 @@
       </div>
     </div>
 
-    <!-- Root Note Selector (One Tap Places Chord) -->
+    <!-- Root Note Selector -->
     <div class="flex items-center gap-1 overflow-x-auto custom-scrollbar pb-1">
       <span class="text-[10px] font-bold text-slate-400 w-10 shrink-0 uppercase">Root:</span>
       <div class="flex items-center gap-1">
@@ -125,7 +125,7 @@
     </div>
   </div>
 
-  <!-- CONTROL TOOLBAR (Transpose, AutoScroll, Save/Copy) -->
+  <!-- CONTROL TOOLBAR -->
   <div id="perform-toolbar" class="bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center justify-between shrink-0 z-10">
     <div class="flex items-center gap-2">
       <span class="text-xs font-bold text-slate-400">KEY:</span>
@@ -153,9 +153,9 @@
     <div id="view-setup" class="absolute inset-0 p-4 flex flex-col gap-3">
       <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
         <span>Paste Raw Lyrics Below</span>
-        <span class="text-[10px] text-slate-500 lowercase">chords can be attached next</span>
+        <span class="text-[10px] text-slate-500 lowercase">chords above lyrics will auto-align</span>
       </label>
-      <textarea id="raw-lyrics-input" class="flex-1 w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-brand-500 resize-none custom-scrollbar font-mono" placeholder="Paste your song lyrics here..."></textarea>
+      <textarea id="raw-lyrics-input" class="flex-1 w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-brand-500 resize-none custom-scrollbar font-mono" placeholder="Paste your lyrics here..."></textarea>
       <button onclick="saveSetupLyrics()" class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
         <i class="fa-solid fa-arrow-right"></i> Save & Edit Chords
       </button>
@@ -185,7 +185,6 @@
     const CHROMATIC_SCALE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
     window.onload = () => {
-      // Restore saved lyrics from LocalStorage if available
       const savedSong = localStorage.getItem('chordcraft_raw_text');
       if (savedSong) {
         document.getElementById('raw-lyrics-input').value = savedSong;
@@ -237,26 +236,87 @@
       parseLyricsToState();
     }
 
+    function isChordLine(line) {
+      const trimmed = line.trim();
+      if (!trimmed) return false;
+      const tokens = trimmed.split(/\s+/);
+      const chordPattern = /^[A-G][#b]?(m|maj|dim|aug|sus\d?|add\d?|\d)*(\/[A-G][#b]?)?$/;
+      let chordMatches = 0;
+      tokens.forEach(t => {
+        if (chordPattern.test(t)) chordMatches++;
+      });
+      return (chordMatches / tokens.length) >= 0.5;
+    }
+
     function parseLyricsToState() {
       const lines = rawText.split('\n');
-      parsedLines = lines.map((lineStr) => {
-        const words = lineStr.split(' ');
-        const tokens = words.map((wStr) => {
-          const chars = wStr.split('').map((cStr) => ({
-            char: cStr,
-            chord: null
-          }));
-          return { word: wStr, chars: chars.length > 0 ? chars : [{ char: ' ', chord: null }] };
-        });
-        return { tokens };
+      parsedLines = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const currentLine = lines[i];
+        
+        if (isChordLine(currentLine) && i + 1 < lines.length && !isChordLine(lines[i + 1])) {
+          const chordLineStr = currentLine;
+          const lyricLineStr = lines[i + 1];
+          i++; // Skip lyric line in next iteration
+
+          parsedLines.push(buildLineObject(lyricLineStr, chordLineStr));
+        } else {
+          parsedLines.push(buildLineObject(currentLine, null));
+        }
+      }
+    }
+
+    function buildLineObject(lyricStr, chordStr) {
+      const chars = lyricStr.split('').map(c => ({ char: c, chord: null }));
+
+      if (chordStr) {
+        const regex = /([A-G][#b]?(?:m|maj|dim|aug|sus\d?|add\d?|\d)*(?:\/[A-G][#b]?)?)/g;
+        let match;
+        while ((match = regex.exec(chordStr)) !== null) {
+          const chordName = match[1];
+          const pos = match.index;
+          if (pos < chars.length) {
+            chars[pos].chord = chordName;
+          } else {
+            // Append trailing spaces if chord extends beyond lyric line
+            while (chars.length < pos) {
+              chars.push({ char: ' ', chord: null });
+            }
+            chars.push({ char: ' ', chord: chordName });
+          }
+        }
+      }
+
+      // Group chars into word tokens
+      const tokens = [];
+      let currentToken = { word: '', chars: [] };
+
+      chars.forEach((cObj) => {
+        if (cObj.char === ' ') {
+          if (currentToken.chars.length > 0) {
+            tokens.push(currentToken);
+            currentToken = { word: '', chars: [] };
+          }
+          tokens.push({ word: ' ', chars: [cObj] });
+        } else {
+          currentToken.word += cObj.char;
+          currentToken.chars.push(cObj);
+        }
       });
+
+      if (currentToken.chars.length > 0) {
+        tokens.push(currentToken);
+      }
+
+      return { tokens };
     }
 
     function renderCanvas() {
       const container = document.getElementById('song-render-area');
       container.innerHTML = '';
 
-      if (parsedLines.length === 0 || (parsedLines.length === 1 && parsedLines[0].tokens.length === 0)) {
+      if (parsedLines.length === 0) {
         container.innerHTML = '<div class="text-center text-slate-500 py-12">No lyrics pasted yet. Tap Setup to add lyrics.</div>';
         return;
       }
@@ -288,7 +348,7 @@
               if (currentMode === 'edit') {
                 chordBadge.onclick = (e) => {
                   e.stopPropagation();
-                  cObj.chord = null; // Delete chord on tap
+                  cObj.chord = null;
                   renderCanvas();
                 };
               }
@@ -361,10 +421,7 @@
 
     function transposeChordString(chordStr, semitones) {
       if (semitones === 0) return chordStr;
-      
-      return chordStr.replace(/([A-G][#b]?)/g, (match) => {
-        return shiftNote(match, semitones);
-      });
+      return chordStr.replace(/([A-G][#b]?)/g, (match) => shiftNote(match, semitones));
     }
 
     function shiftNote(note, semitones) {
@@ -378,55 +435,4 @@
       let idx = CHROMATIC_SCALE.indexOf(normalized);
       if (idx === -1) return note;
 
-      let newIdx = (idx + semitones) % 12;
-      if (newIdx < 0) newIdx += 12;
-      return CHROMATIC_SCALE[newIdx];
-    }
-
-    function toggleAutoScroll() {
-      isAutoScrolling = !isAutoScrolling;
-      const btn = document.getElementById('btn-autoscroll');
-      const container = document.getElementById('view-canvas');
-
-      if (isAutoScrolling) {
-        btn.className = "px-3 py-1.5 bg-brand-600 border border-brand-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1 animate-pulse";
-        autoScrollInterval = setInterval(() => {
-          container.scrollTop += 1;
-        }, 40);
-      } else {
-        btn.className = "px-3 py-1.5 bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1";
-        clearInterval(autoScrollInterval);
-      }
-    }
-
-    function exportSongText() {
-      let output = "";
-      parsedLines.forEach(line => {
-        let chordLine = "";
-        let lyricLine = "";
-        
-        line.tokens.forEach(token => {
-          token.chars.forEach(cObj => {
-            const chord = cObj.chord ? transposeChordString(cObj.chord, currentTransposeSemitones) : "";
-            chordLine += chord.padEnd(Math.max(chord.length, 1), " ");
-            lyricLine += cObj.char;
-          });
-          chordLine += " ";
-          lyricLine += " ";
-        });
-        
-        if (chordLine.trim().length > 0) {
-          output += chordLine + "\n";
-        }
-        output += lyricLine + "\n";
-      });
-
-      navigator.clipboard.writeText(output).then(() => {
-        alert("Song with chords copied to clipboard!");
-      }).catch(() => {
-        alert("Failed to copy automatically. Copying text directly:\n\n" + output);
-      });
-    }
-  </script>
-</body>
-</html>
+      let newIdx = (idx + se
